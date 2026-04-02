@@ -1,7 +1,9 @@
+-- ================================
+-- 1. Add Discount Column
+-- ================================
 
--- 1.New column discount with numeric datatype
-
-ALTER TABLE sales ADD COLUMN discount NUMERIC(5,2) 
+ALTER TABLE sales 
+ADD COLUMN discount NUMERIC(5,2);
 
 UPDATE sales
 SET discount =
@@ -10,17 +12,22 @@ SET discount =
         THEN discount_percent::NUMERIC
         ELSE 0
     END;
-	
--- 2.Delete the old discount_percent column
 
-ALTER TABLE SALES 
-DROP COLUMN discount_percent ;
+-- ================================
+-- 2. Remove Old Column
+-- ================================
 
--- 3.Full transaction view
+ALTER TABLE sales 
+DROP COLUMN discount_percent;
+
+-- ================================
+-- 3. Full Transaction View
+-- ================================
+
 SELECT 
     s.transaction_id,
     s.sale_date,
-	
+
     c.customer_id,
     c.customer_name,
     c.age,
@@ -37,31 +44,39 @@ SELECT
 
     s.quantity,
 
-	(p.price*s.quantity) AS Gross_Amount,
-	ROUND((p.price*s.quantity*(1-s.discount/100.0)),2) AS Net_Sales_Amount
+    (p.price * s.quantity) AS gross_amount,
+    ROUND((p.price * s.quantity * (1 - s.discount/100.0)), 2) AS net_sales_amount
 
-FROM sales s JOIN customers c ON s.customer_id=c.customer_id
-JOIN products p ON s.product_id=p.product_id
-JOIN stores st ON s.store_id=st.store_id;
-	
--- 4. Total revenue
-SELECT 
-SUM(p.price*s.quantity) AS Total_revenue
-FROM products p 
-JOIN sales s 
-ON p.product_id=s.product_id;
-
--- 5.Total revenue by month
-SELECT 
-DATE_TRUNC('month',sale_date) AS month,
-SUM(s.quantity*p.price) AS Total_revenue_by_month
 FROM sales s
-JOIN products p
-ON s.product_id=p.product_id
+JOIN customers c ON s.customer_id = c.customer_id
+JOIN products p ON s.product_id = p.product_id
+JOIN stores st ON s.store_id = st.store_id;
+
+-- ================================
+-- 4. Total Revenue
+-- ================================
+
+SELECT 
+SUM(p.price * s.quantity) AS total_revenue
+FROM sales s
+JOIN products p ON s.product_id = p.product_id;
+
+-- ================================
+-- 5. Monthly Revenue
+-- ================================
+
+SELECT 
+DATE_TRUNC('month', s.sale_date) AS month,
+SUM(s.quantity * p.price) AS total_revenue
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
 GROUP BY month
 ORDER BY month;
 
--- 6.Revenue by product category
+-- ================================
+-- 6. Revenue by Category
+-- ================================
+
 SELECT
   p.category,
   SUM(s.quantity * p.price) AS revenue
@@ -70,95 +85,122 @@ JOIN products p ON s.product_id = p.product_id
 GROUP BY p.category
 ORDER BY revenue DESC;
 
---7. Top 10 customers by revenue
+-- ================================
+-- 7. Top 10 Customers
+-- ================================
 
-SELECT c.customer_name,
+SELECT 
+c.customer_name,
 SUM(s.quantity * p.price) AS total_spent
 FROM sales s
-JOIN customers c ON s.customer_id=c.customer_id
-JOIN products p ON s.product_id=p.product_id
+JOIN customers c ON s.customer_id = c.customer_id
+JOIN products p ON s.product_id = p.product_id
 GROUP BY c.customer_name
 ORDER BY total_spent DESC
 LIMIT 10;
 
--- 8.Customer purchase frequency
-
-SELECT customer_id,
-COUNT(transaction_id) AS frequency
-FROM sales  
-GROUP BY customer_id 
-ORDER BY frequency DESC;
-
--- 9.Average order value (AOV)
-
-SELECT ROUND(SUM(s.quantity*p.price)/ COUNT(DISTINCT(s.transaction_id))) AS Average_order_value
-FROM sales s
-JOIN products p
-ON s.product_id=p.product_id;
-
--- 10.Average order value (AOV)
-
-SELECT ROUND(SUM(s.quantity*p.price)/ COUNT(DISTINCT(s.transaction_id))) AS Average_order_value
-FROM sales s
-JOIN products p
-ON s.product_id=p.product_id;
-
--- 11. Revenue by store city
-
-SELECT st.store_city,SUM(s.quantity*p.price) AS revenue_by_city
-FROM sales s
-JOIN stores st ON st.store_id=s.store_id
-JOIN products p ON s.product_id=p.product_id
-GROUP BY st.store_city;
-
--- 12.Store type comparison
-
-SELECT st.store_type,COUNT(DISTINCT(s.transaction_id)) AS total_transactions,
-SUM(s.quantity*p.price) AS revenue
-FROM Sales s
-JOIN stores st ON st.store_id=s.store_id
-JOIN products p ON s.product_id=p.product_id
-GROUP BY store_type
-ORDER BY revenue DESC;
-
--- 13.Revenue after discount
+-- ================================
+-- 8. Customer Purchase Frequency
+-- ================================
 
 SELECT 
-ROUND(SUM(s.quantity*p.price*(1-s.discount/100)),2) AS revenue_after_discount
-FROM sales s 
-JOIN products p 
-ON s.product_id=p.product_id;
+customer_id,
+COUNT(transaction_id) AS frequency
+FROM sales
+GROUP BY customer_id
+ORDER BY frequency DESC;
 
--- 14.High discount impact products
+-- ================================
+-- 9. Average Order Value (AOV)
+-- ================================
 
-SELECT p.product_name,AVG(s.discount) AS avg_discount
-FROM products p 
-JOIN sales s 
-ON p.product_id=s.product_id
-GROUP BY p.product_name
-ORDER BY avg_discount DESC;
+SELECT 
+ROUND(SUM(s.quantity * p.price) / COUNT(DISTINCT s.transaction_id), 2) AS avg_order_value
+FROM sales s
+JOIN products p ON s.product_id = p.product_id;
 
--- 15.Sales by weekday
+-- ================================
+-- 10. Revenue by Store City
+-- ================================
 
-SELECT TO_CHAR(sale_date,'Day') AS weekday,
-COUNT(*)AS transactions
-FROM Sales 
-GROUP BY weekday;
+SELECT 
+st.store_city,
+SUM(s.quantity * p.price) AS revenue
+FROM sales s
+JOIN stores st ON st.store_id = s.store_id
+JOIN products p ON s.product_id = p.product_id
+GROUP BY st.store_city
+ORDER BY revenue DESC;
 
--- 16.Customer contribution by type(new vs old)
+-- ================================
+-- 11. Store Type Comparison
+-- ================================
+
+SELECT 
+st.store_type,
+COUNT(DISTINCT s.transaction_id) AS total_transactions,
+SUM(s.quantity * p.price) AS revenue
+FROM sales s
+JOIN stores st ON st.store_id = s.store_id
+JOIN products p ON s.product_id = p.product_id
+GROUP BY st.store_type
+ORDER BY revenue DESC;
+
+-- ================================
+-- 12. Revenue After Discount
+-- ================================
+
+SELECT 
+ROUND(SUM(s.quantity * p.price * (1 - s.discount/100.0)), 2) AS revenue_after_discount
+FROM sales s
+JOIN products p ON s.product_id = p.product_id;
+
+-- ================================
+-- 13. Discount Impact Analysis
+-- ================================
+
+SELECT
+  CASE
+    WHEN discount = 0 THEN 'No Discount'
+    WHEN discount <= 5 THEN '0-5%'
+    WHEN discount <= 15 THEN '5-15%'
+    ELSE '15%+'
+  END AS discount_bucket,
+  ROUND(SUM(s.quantity * p.price), 2) AS revenue
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
+GROUP BY discount_bucket
+ORDER BY revenue DESC;
+
+-- ================================
+-- 14. Sales by Weekday (Sorted)
+-- ================================
+
+SELECT 
+TO_CHAR(sale_date, 'Day') AS weekday,
+COUNT(*) AS transactions
+FROM sales
+GROUP BY weekday, EXTRACT(DOW FROM sale_date)
+ORDER BY EXTRACT(DOW FROM sale_date);
+
+-- ================================
+-- 15. Customer Type (New vs Old)
+-- ================================
 
 SELECT 
 CASE 
-WHEN s.sale_date-c.signup_date<=90 THEN 'new_customer'
-ELSE 'old customer'
+  WHEN s.sale_date - c.signup_date <= 90 THEN 'New Customer'
+  ELSE 'Old Customer'
 END AS customer_type,
-SUM(s.quantity*p.price)AS revenue
-FROM sales s 
-JOIN customers c ON s.customer_id=c.customer_id
-JOIN products p ON s.product_id=p.product_id
+SUM(s.quantity * p.price) AS revenue
+FROM sales s
+JOIN customers c ON s.customer_id = c.customer_id
+JOIN products p ON s.product_id = p.product_id
 GROUP BY customer_type;
 
--- 17. Running total revenue(window function)
+-- ================================
+-- 16. Running Revenue (Window Function)
+-- ================================
 
 SELECT
   sale_date,
@@ -166,7 +208,9 @@ SELECT
 FROM sales s
 JOIN products p ON s.product_id = p.product_id;
 
--- 18.Rank products by revenue
+-- ================================
+-- 17. Product Revenue Ranking
+-- ================================
 
 SELECT
   p.product_name,
@@ -176,19 +220,23 @@ FROM sales s
 JOIN products p ON s.product_id = p.product_id
 GROUP BY p.product_name;
 
--- 19.Customer Lifetime Value (CLV)
+-- ================================
+-- 18. Customer Lifetime Value (CLV)
+-- ================================
 
 SELECT
   c.customer_id,
   c.customer_name,
-  ROUND(SUM(s.quantity * p.price * (1 - s.discount/100.0)),2) AS lifetime_value
+  ROUND(SUM(s.quantity * p.price * (1 - s.discount/100.0)), 2) AS lifetime_value
 FROM sales s
 JOIN customers c ON s.customer_id = c.customer_id
 JOIN products p ON s.product_id = p.product_id
 GROUP BY c.customer_id, c.customer_name
 ORDER BY lifetime_value DESC;
 
--- 20.RFM Segmentation 
+-- ================================
+-- 19. RFM Segmentation
+-- ================================
 
 WITH rfm AS (
   SELECT
@@ -209,31 +257,25 @@ SELECT *,
   END AS customer_segment
 FROM rfm;
 
--- 21.Discount impact analysis
+-- ================================
+-- 20. Repeat vs One-time Customers
+-- ================================
 
-SELECT
-  CASE
-    WHEN discount = 0 THEN 'No Discount'
-    WHEN discount BETWEEN 1 AND 10 THEN 'Low Discount'
-    ELSE 'High Discount'
-  END AS discount_bucket,
-  SUM(quantity * price) AS revenue
-FROM sales s
-JOIN products p ON s.product_id = p.product_id
-GROUP BY discount_bucket;
+SELECT customer_type, COUNT(*) AS customers
+FROM (
+    SELECT customer_id,
+        CASE 
+            WHEN COUNT(transaction_id) = 1 THEN 'One-time'
+            ELSE 'Repeat'
+        END AS customer_type
+    FROM sales
+    GROUP BY customer_id
+) t
+GROUP BY customer_type;
 
--- 22.Repeat vs one-time customers
-
-SELECT
-  CASE
-    WHEN COUNT(transaction_id) = 1 THEN 'One-time'
-    ELSE 'Repeat'
-  END AS customer_type,
-  COUNT(*) AS customers
-FROM sales
-GROUP BY customer_id;
-
--- 23.Month-over-month growth
+-- ================================
+-- 21. Month-over-Month Growth
+-- ================================
 
 WITH monthly AS (
   SELECT
@@ -248,4 +290,3 @@ SELECT
   revenue,
   revenue - LAG(revenue) OVER (ORDER BY month) AS mom_growth
 FROM monthly;
-
