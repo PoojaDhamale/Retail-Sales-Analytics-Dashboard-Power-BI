@@ -17,7 +17,7 @@ Products: Product details, categories, and pricing
 Sales: Transaction-level purchase data and discount information
 Stores: Store location and type
 <br>
-**⚙️ Tech Stack**<br>
+**⚙️ Tech Stack**<br><br>
 SQL: Data cleaning, transformation, KPI calculations, and advanced analytics
 Power BI: Dashboard development, KPI visualization, and business storytelling
 <br>
