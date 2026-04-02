@@ -1,24 +1,27 @@
-🛒 Retail Sales Performance, Customer Segmentation & Discount Optimization Dashboard
-📌 Overview
+**🛒 Retail Sales Performance, Customer Segmentation & Discount Optimization Dashboard**
+**📌 Overview**
 
 This is an end-to-end data analytics project focused on analyzing and optimizing retail sales performance. The project leverages SQL for data processing and advanced analytics and Power BI for interactive visualization, enabling data-driven decision-making across revenue, customer behavior, and pricing strategies.
 
-🚀 Features
+**🚀 Features**
 Interactive Power BI Dashboard: KPI-driven insights for stakeholders
 Sales Performance Analysis: Revenue, monthly trends, and order metrics
 Customer Segmentation: RFM-based segmentation and customer lifetime value (CLV)
 Discount Optimization: Analysis of discount impact on revenue and pricing strategy
 Product & Category Insights: Identification of top-performing products and categories
 Geographic Analysis: Store-level and city-level performance tracking
-📂 Data Sources
+
+**📂 Data Sources**
 Customers: Demographics, signup date, and behavioral attributes
 Products: Product details, categories, and pricing
 Sales: Transaction-level purchase data and discount information
 Stores: Store location and type
-⚙️ Tech Stack
+
+**⚙️ Tech Stack**
 SQL: Data cleaning, transformation, KPI calculations, and advanced analytics
 Power BI: Dashboard development, KPI visualization, and business storytelling
-🔄 Workflow
+
+**🔄 Workflow**
 
 1. Data Preparation (SQL)
 
@@ -42,17 +45,19 @@ Revenue and sales trends
 Customer and product insights
 Discount impact analysis
 Geographic performance
-📊 Key Insights
+
+**📊 Key Insights**
 0–5% discounts generate the highest revenue, indicating optimal pricing range
 High-value customers contribute a significant portion of total revenue
 Top product categories drive the majority of sales
 Regional performance differences highlight opportunities for targeted marketing
-📈 Results
+
+**📈 Results**
 Delivered actionable insights for sales optimization and pricing strategy
 Identified high-value customers and top-performing products
 Enabled data-driven decision-making through an interactive dashboard
-👩‍💻 Author
 
+**👩‍💻 Author**
 Pooja Dhamale
 Aspirant Data Analyst
 Skills: SQL | Power BI | Data Visualization
